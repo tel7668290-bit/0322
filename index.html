@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>題庫練習與複習系統</title>
+    <title>保險證照題庫練習系統</title>
     <style>
         * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
         body {
@@ -17,42 +17,60 @@
             min-height: 100vh;
         }
 
-        /* ---------------- 版面容器容器 ---------------- */
         .screen {
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             background: #1e293b;
             padding: 30px;
             border-radius: 16px;
             box-shadow: 0 15px 30px rgba(0,0,0,0.5);
-            display: none; /* 預設隱藏，透過 JS 切換顯示 */
+            display: none;
             flex-direction: column;
             align-items: center;
         }
         .active-screen { display: flex; }
 
-        /* ---------------- 首頁按鈕與標題樣式 ---------------- */
-        h1 { font-size: 32px; color: #38bdf8; margin-bottom: 10px; text-align: center; }
-        .subtitle { color: #94a3b8; margin-bottom: 30px; font-size: 16px; }
+        h1 { font-size: 28px; color: #38bdf8; margin-bottom: 5px; text-align: center; }
+        .subtitle { color: #94a3b8; margin-bottom: 25px; font-size: 15px; }
+
+        /* ---------------- 首頁按鈕分組 ---------------- */
+        .btn-group-title {
+            width: 100%;
+            color: #fbbf24;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid #334155;
+            padding-bottom: 5px;
+        }
 
         .main-btn {
-            width: 80%;
-            max-width: 350px;
-            padding: 18px;
-            margin: 10px 0;
-            font-size: 20px;
+            width: 100%;
+            max-width: 400px;
+            padding: 16px;
+            margin: 8px 0;
+            font-size: 18px;
             font-weight: bold;
             border: none;
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
         .start-btn { background: #38bdf8; color: #0f172a; }
-        .start-btn:hover { background: #7dd3fc; transform: translateY(-3px); }
+        .start-btn:hover { background: #7dd3fc; transform: translateY(-2px); }
         
         .review-btn { background: #10b981; color: #ffffff; }
-        .review-btn:hover { background: #34d399; transform: translateY(-3px); }
+        .review-btn:hover { background: #34d399; transform: translateY(-2px); }
+
+        .subject-btn { background: #6366f1; color: #ffffff; } /* 紫色按鈕代表專科 */
+        .subject-btn:hover { background: #818cf8; transform: translateY(-2px); }
 
         .nav-btn {
             background: #334155;
@@ -64,11 +82,9 @@
             font-size: 14px;
             align-self: flex-start;
             margin-bottom: 20px;
-            transition: 0.2s;
         }
-        .nav-btn:hover { background: #475569; color: #fff; }
 
-        /* ---------------- 測驗區樣式 ---------------- */
+        /* ---------------- 測驗畫面 ---------------- */
         .quiz-header {
             width: 100%;
             display: flex;
@@ -79,80 +95,57 @@
             margin-bottom: 20px;
             font-weight: bold;
         }
-        .question-text { font-size: 22px; font-weight: bold; margin-bottom: 25px; width: 100%; line-height: 1.5; }
+        .question-text { font-size: 20px; font-weight: bold; margin-bottom: 25px; width: 100%; line-height: 1.6; }
         
         .options-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; }
         .opt-btn {
-            padding: 15px;
+            padding: 14px;
             background: #0f172a;
             border: 2px solid #334155;
             color: #f8fafc;
             border-radius: 10px;
-            font-size: 18px;
+            font-size: 16px;
             text-align: left;
             cursor: pointer;
             transition: 0.2s;
         }
-        .opt-btn:hover:not(:disabled) { border-color: #38bdf8; background: #1e293b; }
-        
-        /* 答題回饋色彩 */
+        .opt-btn:hover:not(:disabled) { border-color: #38bdf8; }
         .correct { background: #22c55e !important; border-color: #22c55e !important; color: white !important; }
         .wrong { background: #ef4444 !important; border-color: #ef4444 !important; color: white !important; }
 
-        .feedback-area {
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            font-weight: bold;
-            margin-top: 15px;
-            width: 100%;
-        }
-        .next-btn {
-            background: #fbbf24;
-            color: #0f172a;
-            border: none;
-            padding: 12px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 8px;
-            cursor: pointer;
-            display: none;
-            margin-top: 10px;
-            transition: 0.2s;
-        }
-        .next-btn:hover { background: #fcd34d; }
+        .feedback-area { height: 60px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: bold; margin-top: 10px; text-align: center; }
+        .next-btn { background: #fbbf24; color: #0f172a; border: none; padding: 12px 30px; font-size: 18px; font-weight: bold; border-radius: 8px; cursor: pointer; display: none; }
 
-        /* ---------------- 複習區樣式 ---------------- */
-        .review-list { width: 100%; max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px; }
-        .review-card {
-            background: #0f172a;
-            border-left: 4px solid #38bdf8;
-            padding: 15px;
-            border-radius: 8px;
-            width: 100%;
-        }
-        .review-q { font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #f8fafc; }
-        .review-a { font-size: 16px; color: #4ade80; font-weight: bold; }
+        /* ---------------- 複習清單 ---------------- */
+        .review-list { width: 100%; max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .review-card { background: #0f172a; border-left: 4px solid #6366f1; padding: 15px; border-radius: 8px; }
+        .review-q { font-size: 15px; font-weight: bold; margin-bottom: 5px; }
+        .review-a { color: #4ade80; font-weight: bold; }
     </style>
 </head>
 <body>
 
     <div id="home-screen" class="screen active-screen">
-        <h1>📚 題庫練習器</h1>
-        <div class="subtitle">請選擇你要進行的模式</div>
-        <button class="main-btn start-btn" onclick="startTest()">🚀 測試開始</button>
-        <button class="main-btn review-btn" onclick="showReview()">📖 複習區</button>
+        <h1>📚 保險證照練習系統</h1>
+        <div class="subtitle">選擇測驗科目開始練習</div>
+        
+        <div class="btn-group-title">全科練習</div>
+        <button class="main-btn start-btn" onclick="startTest('default')">🚀 隨機混合測試</button>
+        <button class="main-btn review-btn" onclick="showReview('default')">📖 全部題庫預覽</button>
+
+        <div class="btn-group-title">專業科目分區</div>
+        <button class="main-btn subject-btn" onclick="startTest('insurance')">📄 專業科目：保險實務</button>
+        <button class="main-btn review-btn" style="background: #334155;" onclick="showReview('insurance')">📖 保險實務複習區</button>
     </div>
 
     <div id="quiz-screen" class="screen">
         <button class="nav-btn" onclick="goHome()">🏠 返回首頁</button>
+        <div id="quiz-mode-title" style="color:#6366f1; font-weight: bold; margin-bottom: 10px;"></div>
         <div class="quiz-header">
-            <div>進度：<span id="q-progress">1/0</span></div>
+            <div>進度：<span id="q-progress">0/0</span></div>
             <div>得分：<span id="q-score">0</span></div>
         </div>
-        <div id="question" class="question-text">載入題目中...</div>
+        <div id="question" class="question-text">載入中...</div>
         <div id="options" class="options-grid"></div>
         <div id="feedback" class="feedback-area"></div>
         <button id="next-btn" class="next-btn" onclick="nextQuestion()">下一題 ➡️</button>
@@ -160,22 +153,25 @@
 
     <div id="result-screen" class="screen">
         <h1>🎉 測驗結束</h1>
-        <div id="final-score" style="font-size: 24px; color: #fbbf24; font-weight: bold; margin: 20px 0;">得分：0 / 0</div>
-        <button class="main-btn start-btn" onclick="startTest()">🔄 重新測驗</button>
-        <button class="main-btn review-btn" onclick="showReview()">📖 前往複習區看答案</button>
-        <button class="nav-btn" style="align-self: center; margin-top: 15px;" onclick="goHome()">🏠 回首頁</button>
+        <div id="final-score" style="font-size: 24px; color: #fbbf24; font-weight: bold; margin: 20px 0;"></div>
+        <button class="main-btn start-btn" onclick="goHome()">🏠 回到首頁</button>
     </div>
 
     <div id="review-screen" class="screen">
         <button class="nav-btn" onclick="goHome()">🏠 返回首頁</button>
-        <h2 style="color: #10b981; margin-top: 0; margin-bottom: 20px;">📖 完整題庫與解答清單</h2>
+        <h2 id="review-title" style="color: #4ade80; margin-top: 0; margin-bottom: 20px;">複習區</h2>
         <div id="review-container" class="review-list"></div>
     </div>
 
     <script>
         // ==========================================
-        // 📌 題庫資料庫 (你可以隨時在此新增修改題目)
+        // 📌 題庫資料庫
         // ==========================================
+        const defaultBank = [
+            { question: "測試題目：下列何者不是金融市場的主要功能？", options: ["提供交易場所", "擔任資金橋樑", "提供投機場所", "促進經濟發展"], answer: "提供投機場所" }
+        ];
+
+        // 從 PDF 抓取的「保險實務」完整題庫 (前 62 題)
         const questionBank = [
     {
         question: "行動裝置保險條款中明訂要保人/被保險人的資格。下列何者可以是行動裝置保險所規範的要保人/被保險人?1.一般自然人;2 一般法人;3 未成年人;受監護宣告成年人",
@@ -488,127 +484,110 @@
         answer: "繼續有效,但需提供原廠維修紀錄給保險公司做產品識別碼之變更。"
     }
 ];
+        ];
 
-        let currentQuizData = []; // 存放本次測驗洗牌後的題目
-        let currentIdx = 0;       // 目前第幾題
-        let score = 0;            // 目前得分
+        let currentActiveBank = []; 
+        let currentModeName = "";
+        let currentIdx = 0;
+        let score = 0;
 
-        // --- 頁面切換控制器 ---
-        function switchScreen(targetId) {
+        function goHome() { 
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.getElementById(targetId).classList.add('active-screen');
+            document.getElementById('home-screen').classList.add('active-screen');
         }
 
-        function goHome() { switchScreen('home-screen'); }
-
-        // --- 陣列洗牌函數 (打亂題目與選項順序) ---
-        function shuffle(array) {
-            return [...array].sort(() => Math.random() - 0.5);
-        }
+        function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
 
         // ==========================================
-        // 🚀 測試開始邏輯
+        // 🚀 啟動測驗 (依據 mode 切換題庫)
         // ==========================================
-        function startTest() {
-            // 洗牌題目
-            currentQuizData = shuffle(questionBank);
+        function startTest(mode) {
+            if (mode === 'insurance') {
+                currentActiveBank = shuffle(insurancePracticeBank);
+                currentModeName = "專業科目：保險實務";
+            } else {
+                currentActiveBank = shuffle(defaultBank);
+                currentModeName = "隨機全科測試";
+            }
+            
             currentIdx = 0;
             score = 0;
-            switchScreen('quiz-screen');
+            document.getElementById('quiz-mode-title').innerText = currentModeName;
+            document.getElementById('quiz-screen').classList.add('active-screen');
+            document.getElementById('home-screen').classList.remove('active-screen');
             renderQuiz();
         }
 
         function renderQuiz() {
-            if (currentIdx >= currentQuizData.length) {
-                // 進入結算畫面
-                document.getElementById('final-score').innerText = `最終得分：${score} / ${currentQuizData.length}`;
-                switchScreen('result-screen');
+            if (currentIdx >= currentActiveBank.length) {
+                document.getElementById('final-score').innerText = `測驗完成！得分：${score} / ${currentActiveBank.length}`;
+                document.getElementById('quiz-screen').classList.remove('active-screen');
+                document.getElementById('result-screen').classList.add('active-screen');
                 return;
             }
 
-            const currentQ = currentQuizData[currentIdx];
-            document.getElementById('q-progress').innerText = `${currentIdx + 1} / ${currentQuizData.length}`;
+            const qData = currentActiveBank[currentIdx];
+            document.getElementById('q-progress').innerText = `${currentIdx + 1} / ${currentActiveBank.length}`;
             document.getElementById('q-score').innerText = score;
-            document.getElementById('question').innerText = `Q: ${currentQ.question}`;
+            document.getElementById('question').innerText = qData.question;
             
-            // 洗牌該題選項
-            const shuffledOptions = shuffle(currentQ.options);
-            const optContainer = document.getElementById('options');
-            optContainer.innerHTML = '';
+            const optArea = document.getElementById('options');
+            optArea.innerHTML = '';
             
-            shuffledOptions.forEach(opt => {
+            shuffle(qData.options).forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'opt-btn';
                 btn.innerText = opt;
-                btn.onclick = () => checkAnswer(opt, currentQ.answer, btn);
-                optContainer.appendChild(btn);
+                btn.onclick = () => {
+                    const btns = document.querySelectorAll('.opt-btn');
+                    btns.forEach(b => b.disabled = true);
+                    if (opt === qData.answer) {
+                        btn.classList.add('correct');
+                        document.getElementById('feedback').innerHTML = "<span style='color:#4ade80'>✔ 答對了！</span>";
+                        score++;
+                    } else {
+                        btn.classList.add('wrong');
+                        document.getElementById('feedback').innerHTML = `<span style='color:#f87171'>✘ 答錯了！正確答案：${qData.answer}</span>`;
+                        btns.forEach(b => { if(b.innerText === qData.answer) b.classList.add('correct'); });
+                    }
+                    document.getElementById('next-btn').style.display = 'block';
+                };
+                optArea.appendChild(btn);
             });
-
             document.getElementById('feedback').innerText = '';
             document.getElementById('next-btn').style.display = 'none';
         }
 
-        function checkAnswer(selectedOpt, correctOpt, clickedBtn) {
-            // 鎖定所有按鈕防止重複作答
-            const allBtns = document.querySelectorAll('.opt-btn');
-            allBtns.forEach(btn => btn.disabled = true);
+        function nextQuestion() { currentIdx++; renderQuiz(); }
 
-            const feedback = document.getElementById('feedback');
+        // ==========================================
+        // 📖 啟動複習區
+        // ==========================================
+        function showReview(mode) {
+            const bank = (mode === 'insurance') ? insurancePracticeBank : defaultBank;
+            const title = (mode === 'insurance') ? "📖 保險實務 - 完整題庫" : "📖 預覽區";
             
-            if (selectedOpt === correctOpt) {
-                clickedBtn.classList.add('correct');
-                feedback.innerText = '✔ 答對了！';
-                feedback.style.color = '#4ade80';
-                score++;
-                document.getElementById('q-score').innerText = score;
-            } else {
-                clickedBtn.classList.add('wrong');
-                feedback.innerText = `✘ 答錯了！正確答案是：${correctOpt}`;
-                feedback.style.color = '#f87171';
-                
-                // 標示出正確答案給使用者看
-                allBtns.forEach(btn => {
-                    if (btn.innerText === correctOpt) btn.classList.add('correct');
-                });
-            }
-
-            document.getElementById('next-btn').style.display = 'block';
-            document.getElementById('next-btn').focus();
-        }
-
-        function nextQuestion() {
-            currentIdx++;
-            renderQuiz();
-        }
-
-        // --- 支援 Enter 快捷鍵進入下一題 ---
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                const nextBtn = document.getElementById('next-btn');
-                if (document.getElementById('quiz-screen').classList.contains('active-screen') && nextBtn.style.display === 'block') {
-                    nextBtn.click();
-                }
-            }
-        });
-
-        // ==========================================
-        // 📖 複習區邏輯
-        // ==========================================
-        function showReview() {
-            switchScreen('review-screen');
+            document.getElementById('review-title').innerText = title;
             const container = document.getElementById('review-container');
             container.innerHTML = '';
 
-            questionBank.forEach((item, index) => {
+            bank.forEach((item, i) => {
                 const card = document.createElement('div');
                 card.className = 'review-card';
-                card.innerHTML = `
-                    <div class="review-q">${index + 1}. ${item.question}</div>
-                    <div class="review-a">解答：${item.answer}</div>
-                `;
+                card.innerHTML = `<div class="review-q">${i+1}. ${item.question}</div><div class="review-a">正確答案：${item.answer}</div>`;
                 container.appendChild(card);
             });
+
+            document.getElementById('home-screen').classList.remove('active-screen');
+            document.getElementById('review-screen').classList.add('active-screen');
         }
+
+        // Enter 快捷鍵
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && document.getElementById('next-btn').style.display === 'block') {
+                nextQuestion();
+            }
+        });
     </script>
 </body>
 </html>
