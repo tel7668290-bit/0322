@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題庫練習與複習系統</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* ---------------- 版面容器容器 ---------------- */
+        .screen {
+            width: 100%;
+            max-width: 700px;
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+            display: none; /* 預設隱藏，透過 JS 切換顯示 */
+            flex-direction: column;
+            align-items: center;
+        }
+        .active-screen { display: flex; }
+
+        /* ---------------- 首頁按鈕與標題樣式 ---------------- */
+        h1 { font-size: 32px; color: #38bdf8; margin-bottom: 10px; text-align: center; }
+        .subtitle { color: #94a3b8; margin-bottom: 30px; font-size: 16px; }
+
+        .main-btn {
+            width: 80%;
+            max-width: 350px;
+            padding: 18px;
+            margin: 10px 0;
+            font-size: 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .start-btn { background: #38bdf8; color: #0f172a; }
+        .start-btn:hover { background: #7dd3fc; transform: translateY(-3px); }
+        
+        .review-btn { background: #10b981; color: #ffffff; }
+        .review-btn:hover { background: #34d399; transform: translateY(-3px); }
+
+        .nav-btn {
+            background: #334155;
+            color: #cbd5e1;
+            border: 1px solid #475569;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            align-self: flex-start;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+        .nav-btn:hover { background: #475569; color: #fff; }
+
+        /* ---------------- 測驗區樣式 ---------------- */
+        .quiz-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            border-bottom: 2px solid #334155;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .question-text { font-size: 22px; font-weight: bold; margin-bottom: 25px; width: 100%; line-height: 1.5; }
+        
+        .options-grid { width: 100%; display: flex; flex-direction: column; gap: 12px; }
+        .opt-btn {
+            padding: 15px;
+            background: #0f172a;
+            border: 2px solid #334155;
+            color: #f8fafc;
+            border-radius: 10px;
+            font-size: 18px;
+            text-align: left;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .opt-btn:hover:not(:disabled) { border-color: #38bdf8; background: #1e293b; }
+        
+        /* 答題回饋色彩 */
+        .correct { background: #22c55e !important; border-color: #22c55e !important; color: white !important; }
+        .wrong { background: #ef4444 !important; border-color: #ef4444 !important; color: white !important; }
+
+        .feedback-area {
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 15px;
+            width: 100%;
+        }
+        .next-btn {
+            background: #fbbf24;
+            color: #0f172a;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: none;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+        .next-btn:hover { background: #fcd34d; }
+
+        /* ---------------- 複習區樣式 ---------------- */
+        .review-list { width: 100%; max-height: 60vh; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-right: 5px; }
+        .review-card {
+            background: #0f172a;
+            border-left: 4px solid #38bdf8;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+        }
+        .review-q { font-size: 16px; font-weight: bold; margin-bottom: 8px; color: #f8fafc; }
+        .review-a { font-size: 16px; color: #4ade80; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div id="home-screen" class="screen active-screen">
+        <h1>📚 題庫練習器</h1>
+        <div class="subtitle">請選擇你要進行的模式</div>
+        <button class="main-btn start-btn" onclick="startTest()">🚀 測試開始</button>
+        <button class="main-btn review-btn" onclick="showReview()">📖 複習區</button>
+    </div>
+
+    <div id="quiz-screen" class="screen">
+        <button class="nav-btn" onclick="goHome()">🏠 返回首頁</button>
+        <div class="quiz-header">
+            <div>進度：<span id="q-progress">1/0</span></div>
+            <div>得分：<span id="q-score">0</span></div>
+        </div>
+        <div id="question" class="question-text">載入題目中...</div>
+        <div id="options" class="options-grid"></div>
+        <div id="feedback" class="feedback-area"></div>
+        <button id="next-btn" class="next-btn" onclick="nextQuestion()">下一題 ➡️</button>
+    </div>
+
+    <div id="result-screen" class="screen">
+        <h1>🎉 測驗結束</h1>
+        <div id="final-score" style="font-size: 24px; color: #fbbf24; font-weight: bold; margin: 20px 0;">得分：0 / 0</div>
+        <button class="main-btn start-btn" onclick="startTest()">🔄 重新測驗</button>
+        <button class="main-btn review-btn" onclick="showReview()">📖 前往複習區看答案</button>
+        <button class="nav-btn" style="align-self: center; margin-top: 15px;" onclick="goHome()">🏠 回首頁</button>
+    </div>
+
+    <div id="review-screen" class="screen">
+        <button class="nav-btn" onclick="goHome()">🏠 返回首頁</button>
+        <h2 style="color: #10b981; margin-top: 0; margin-bottom: 20px;">📖 完整題庫與解答清單</h2>
+        <div id="review-container" class="review-list"></div>
+    </div>
+
+    <script>
+        // ==========================================
+        // 📌 題庫資料庫 (你可以隨時在此新增修改題目)
+        // ==========================================
+        const questionBank = [
+            { question: "請問下列何者代表「亮光」的檢驗標準代號？", options: ["A", "B", "C", "K"], answer: "A" },
+            { question: "請問下列何者代表「砂紋」的檢驗標準代號？", options: ["A", "B", "C", "K"], answer: "K" },
+            { question: "游標卡尺量測時，為確保精準度，應優先做什麼動作？", options: ["歸零校正", "直接夾取物體", "用力鎖緊螺絲", "目測即可"], answer: "歸零校正" },
+            { question: "公司永續經營的核心理念通常包含下列何者？", options: ["隨意創新", "誠信服務", "追求短期暴利", "只看產量不看品質"], answer: "誠信服務" }
+        ];
+
+        let currentQuizData = []; // 存放本次測驗洗牌後的題目
+        let currentIdx = 0;       // 目前第幾題
+        let score = 0;            // 目前得分
+
+        // --- 頁面切換控制器 ---
+        function switchScreen(targetId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(targetId).classList.add('active-screen');
+        }
+
+        function goHome() { switchScreen('home-screen'); }
+
+        // --- 陣列洗牌函數 (打亂題目與選項順序) ---
+        function shuffle(array) {
+            return [...array].sort(() => Math.random() - 0.5);
+        }
+
+        // ==========================================
+        // 🚀 測試開始邏輯
+        // ==========================================
+        function startTest() {
+            // 洗牌題目
+            currentQuizData = shuffle(questionBank);
+            currentIdx = 0;
+            score = 0;
+            switchScreen('quiz-screen');
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            if (currentIdx >= currentQuizData.length) {
+                // 進入結算畫面
+                document.getElementById('final-score').innerText = `最終得分：${score} / ${currentQuizData.length}`;
+                switchScreen('result-screen');
+                return;
+            }
+
+            const currentQ = currentQuizData[currentIdx];
+            document.getElementById('q-progress').innerText = `${currentIdx + 1} / ${currentQuizData.length}`;
+            document.getElementById('q-score').innerText = score;
+            document.getElementById('question').innerText = `Q: ${currentQ.question}`;
+            
+            // 洗牌該題選項
+            const shuffledOptions = shuffle(currentQ.options);
+            const optContainer = document.getElementById('options');
+            optContainer.innerHTML = '';
+            
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'opt-btn';
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, currentQ.answer, btn);
+                optContainer.appendChild(btn);
+            });
+
+            document.getElementById('feedback').innerText = '';
+            document.getElementById('next-btn').style.display = 'none';
+        }
+
+        function checkAnswer(selectedOpt, correctOpt, clickedBtn) {
+            // 鎖定所有按鈕防止重複作答
+            const allBtns = document.querySelectorAll('.opt-btn');
+            allBtns.forEach(btn => btn.disabled = true);
+
+            const feedback = document.getElementById('feedback');
+            
+            if (selectedOpt === correctOpt) {
+                clickedBtn.classList.add('correct');
+                feedback.innerText = '✔ 答對了！';
+                feedback.style.color = '#4ade80';
+                score++;
+                document.getElementById('q-score').innerText = score;
+            } else {
+                clickedBtn.classList.add('wrong');
+                feedback.innerText = `✘ 答錯了！正確答案是：${correctOpt}`;
+                feedback.style.color = '#f87171';
+                
+                // 標示出正確答案給使用者看
+                allBtns.forEach(btn => {
+                    if (btn.innerText === correctOpt) btn.classList.add('correct');
+                });
+            }
+
+            document.getElementById('next-btn').style.display = 'block';
+            document.getElementById('next-btn').focus();
+        }
+
+        function nextQuestion() {
+            currentIdx++;
+            renderQuiz();
+        }
+
+        // --- 支援 Enter 快捷鍵進入下一題 ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                const nextBtn = document.getElementById('next-btn');
+                if (document.getElementById('quiz-screen').classList.contains('active-screen') && nextBtn.style.display === 'block') {
+                    nextBtn.click();
+                }
+            }
+        });
+
+        // ==========================================
+        // 📖 複習區邏輯
+        // ==========================================
+        function showReview() {
+            switchScreen('review-screen');
+            const container = document.getElementById('review-container');
+            container.innerHTML = '';
+
+            questionBank.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'review-card';
+                card.innerHTML = `
+                    <div class="review-q">${index + 1}. ${item.question}</div>
+                    <div class="review-a">解答：${item.answer}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
