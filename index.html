@@ -163,13 +163,13 @@
 <body>
 
     <div id="home-screen" class="screen active-screen">
-        <h1>📚 小寶專用系統</h1>
+        <h1>❤️小寶專用系統❤️</h1>
         <div class="subtitle">讓小寶隨便就考到</div>
         
         <div class="section-header" style="margin-top: 0;">🚀 全方位綜合訓練</div>
-        <button class="action-btn theme-mixed" style="width: 100%; font-weight: 900;" onclick="startTest('mixed')">🎲 隨機全科大混合抽測</button>
+        <button class="action-btn theme-mixed" style="width: 100%; font-weight: 900;" onclick="startTest('mixed')">🎲 隨機全科大混合抽測 (各科抽10題，共50題)</button>
 
-        <div class="section-header">📂 獨立科目測驗與複習</div>
+        <div class="section-header">📂 獨立科目測驗與複習 (每次隨機抽測30題)</div>
 
         <div class="subject-card">
             <div class="subject-title" style="color: #818cf8;">📄 專業科目：保險實務</div>
@@ -242,7 +242,7 @@
         // 📌 題庫資料庫設定 (各科精選導入)
         // ==========================================
 
-        // 1. 保險實務題庫 (變數名稱修正為 insurancePracticeBank 以符合後續參照)
+        // 1. 保險實務題庫
         const insurancePracticeBank = [
             {
                 question: "行動裝置保險條款中明訂要保人/被保險人的資格。下列何者可以是行動裝置保險所規範的要保人/被保險人?1.一般自然人;2 一般法人;3 未成年人;受監護宣告成年人",
@@ -785,7 +785,7 @@
             }
         ];
 
-        // 3. 職業道德題庫 (完全去重修復版)
+        // 3. 職業道德題庫
         const ethicsBank = [
             {
                 question: "金融從業人員從事保險招攬行為，下列那一項是錯的？",
@@ -2181,33 +2181,41 @@
         function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
 
         // ==========================================
-        // 🚀 啟動測驗控制器
+        // 🚀 啟動測驗控制器 (含各科獨立截取與全科混和邏輯)
         // ==========================================
         function startTest(mode) {
             if (mode === 'practice') {
-                currentActiveBank = shuffle(insurancePracticeBank);
-                currentModeName = "📄 專業科目：保險實務";
+                // 單科打亂後，安全截取最多 30 題 (若題庫不足30題則全上)
+                currentActiveBank = shuffle(insurancePracticeBank).slice(0, 30);
+                currentModeName = "📄 專業科目：保險實務 (隨機30題)";
                 currentModeThemeColor = "#818cf8";
             } else if (mode === 'law') {
-                currentActiveBank = shuffle(insuranceLawBank);
-                currentModeName = "⚖️ 專業科目：保險法規";
+                currentActiveBank = shuffle(insuranceLawBank).slice(0, 30);
+                currentModeName = "⚖️ 專業科目：保險法規 (隨機30題)";
                 currentModeThemeColor = "#f472b6";
             } else if (mode === 'ethics') {
-                currentActiveBank = shuffle(ethicsBank);
-                currentModeName = "🛡️ 專業科目：職業道德";
+                currentActiveBank = shuffle(ethicsBank).slice(0, 30);
+                currentModeName = "🛡️ 專業科目：職業道德 (隨機30題)";
                 currentModeThemeColor = "#fbbf24";
             } else if (mode === 'theory') {
-                currentActiveBank = shuffle(theoryBank);
-                currentModeName = "💡 專業科目：保險理論";
+                currentActiveBank = shuffle(theoryBank).slice(0, 30);
+                currentModeName = "💡 專業科目：保險理論 (隨機30題)";
                 currentModeThemeColor = "#34d399";
             } else if (mode === 'finance') {
-                currentActiveBank = shuffle(financeBank);
-                currentModeName = "📈 專業科目：金融市場常識";
+                currentActiveBank = shuffle(financeBank).slice(0, 30);
+                currentModeName = "📈 專業科目：金融市場常識 (隨機30題)";
                 currentModeThemeColor = "#22d3ee";
             } else {
-                // 混和全科模式
-                currentActiveBank = shuffle([...insurancePracticeBank, ...insuranceLawBank, ...ethicsBank, ...theoryBank, ...financeBank]);
-                currentModeName = "🎲 隨機全科大混合抽測";
+                // 混和全科模式：每個科目獨立隨機抽取 10 題
+                const p10 = shuffle(insurancePracticeBank).slice(0, 10);
+                const l10 = shuffle(insuranceLawBank).slice(0, 10);
+                const e10 = shuffle(ethicsBank).slice(0, 10);
+                const t10 = shuffle(theoryBank).slice(0, 10);
+                const f10 = shuffle(financeBank).slice(0, 10);
+                
+                // 合併 50 題後再次打亂，避免前面全是同一科
+                currentActiveBank = shuffle([...p10, ...l10, ...e10, ...t10, ...f10]);
+                currentModeName = "🎲 隨機全科大混合抽測 (共50題)";
                 currentModeThemeColor = "#38bdf8";
             }
             
