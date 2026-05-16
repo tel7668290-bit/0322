@@ -5743,8 +5743,7 @@ const financeBank = [
   { id: 245, answer: "C", question: "下列何者是現行處理金融消費爭議的專責機構？", options: ["保險商業同業公會", "保險事業發展中心", "金融消費評議中心", "保險職業工會"] },
   { id: 246, answer: "A", question: "下列何種商品是現行法令規定提供特定身分及經濟弱勢者投保的保險商品？", options: ["微型保險", "投資型保險", "強制汽車責任保險", "利率變動型保險"] }
 ];
-
-        let currentActiveBank = []; 
+let currentActiveBank = []; 
         let currentModeName = "";
         let currentModeThemeColor = "";
         let currentIdx = 0;
@@ -5758,77 +5757,72 @@ const financeBank = [
         function shuffle(array) { return [...array].sort(() => Math.random() - 0.5); }
 
         // ==========================================
-        // 🚀 啟動測驗控制器 (含各科獨立截取與全科混和邏輯)
+        // 🛠️ 隨機抽題工具函數
         // ==========================================
-// ==========================================
-// 1. 隨機抽題工具函數 (確保放最上面)
-// ==========================================
-function getRandom(arr, num) {
-    if (!arr || arr.length === 0) return []; // 防呆：避免題庫不存在時出錯
-    const maxNum = Math.min(num, arr.length);
-    const shuffled = [...arr].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, maxNum);
-}
+        function getRandom(arr, num) {
+            if (!arr || arr.length === 0) return []; // 防呆：避免題庫不存在時出錯
+            const maxNum = Math.min(num, arr.length);
+            const shuffled = [...arr].sort(() => 0.5 - Math.random());
+            return shuffled.slice(0, maxNum);
+        }
 
-// ==========================================
-// 2. 開始測驗主要邏輯 (已套用你的真實題庫變數)
-// ==========================================
-function startTest(mode) {
-    currentQuestions = []; // 初始化清空當前題目
-    
-    if (mode === 'mixed') {
-        // --- 隨機測驗：5 個科目各抽 15 題，共 75 題 ---
-        let q1 = getRandom(insurancePracticeBank, 15);
-        let q2 = getRandom(insuranceLawBank, 15);
-        let q3 = getRandom(ethicsBank, 15);
-        let q4 = getRandom(theoryBank, 15);
-        let q5 = getRandom(financeBank, 15);
-        
-        // 將所有抽取出來的題目合併
-        let combined = [...q1, ...q2, ...q3, ...q4, ...q5];
-        // 再次將 75 題徹底打亂順序，達到完全混合效果
-        currentQuestions = getRandom(combined, combined.length);
-        
-        document.getElementById('quiz-mode-title').innerText = "🎲 隨機測驗 (共 75 題)";
-        document.getElementById('quiz-mode-title').style.color = "#38bdf8";
+        // ==========================================
+        // 🚀 開始測驗控制器 (精簡並修正各科抽題數量)
+        // ==========================================
+        function startTest(mode) {
+            currentActiveBank = []; // 清空當前題目
+            
+            if (mode === 'mixed') {
+                // --- 隨機測驗：5 個科目各抽 15 題，共 75 題 ---
+                let q1 = getRandom(insurancePracticeBank, 15);
+                let q2 = getRandom(insuranceLawBank, 15);
+                let q3 = getRandom(ethicsBank, 15);
+                let q4 = getRandom(theoryBank, 15);
+                let q5 = getRandom(financeBank, 15);
+                
+                // 將所有抽取出來的題目合併
+                let combined = [...q1, ...q2, ...q3, ...q4, ...q5];
+                // 再次將 75 題徹底打亂順序，達到完全混合效果
+                currentActiveBank = getRandom(combined, combined.length);
+                
+                document.getElementById('quiz-mode-title').innerText = "🎲 隨機測驗 (共 75 題)";
+                document.getElementById('quiz-mode-title').style.color = "#38bdf8";
 
-    } else {
-        // --- 獨立科目測驗：每次抽 50 題 ---
-        let selectedBank = [];
-        let titleText = "";
-        let titleColor = "";
-        
-        // 精確對應你的科目變數與模式
-        if (mode === 'practice') { selectedBank = insurancePracticeBank; titleText = "📄 保險實務"; titleColor = "#818cf8"; }
-        else if (mode === 'law') { selectedBank = insuranceLawBank; titleText = "⚖️ 保險法規"; titleColor = "#f472b6"; }
-        else if (mode === 'ethics') { selectedBank = ethicsBank; titleText = "🛡️ 職業道德"; titleColor = "#fbbf24"; }
-        else if (mode === 'theory') { selectedBank = theoryBank; titleText = "💡 保險理論"; titleColor = "#34d399"; }
-        else if (mode === 'finance') { selectedBank = financeBank; titleText = "📈 金融市場常識"; titleColor = "#22d3ee"; }
-        
-        // 隨機抽 50 題 (如果該題庫總數不足 50 題，會自動抽該科最大上限)
-        currentQuestions = getRandom(selectedBank, 50);
-        document.getElementById('quiz-mode-title').innerText = titleText + " (共 " + currentQuestions.length + " 題)";
-        document.getElementById('quiz-mode-title').style.color = titleColor;
-    }
+            } else {
+                // --- 獨立科目測驗：每次隨機抽 50 題 ---
+                let selectedBank = [];
+                let titleText = "";
+                let titleColor = "";
+                
+                if (mode === 'practice') { selectedBank = insurancePracticeBank; titleText = "📄 保險實務"; titleColor = "#818cf8"; }
+                else if (mode === 'law') { selectedBank = insuranceLawBank; titleText = "⚖️ 保險法規"; titleColor = "#f472b6"; }
+                else if (mode === 'ethics') { selectedBank = ethicsBank; titleText = "🛡️ 職業道德"; titleColor = "#fbbf24"; }
+                else if (mode === 'theory') { selectedBank = theoryBank; titleText = "💡 保險理論"; titleColor = "#34d399"; }
+                else if (mode === 'finance') { selectedBank = financeBank; titleText = "📈 金融市場常識"; titleColor = "#22d3ee"; }
+                
+                // 隨機抽 50 題
+                currentActiveBank = getRandom(selectedBank, 50);
+                document.getElementById('quiz-mode-title').innerText = titleText + " (共 " + currentActiveBank.length + " 題)";
+                document.getElementById('quiz-mode-title').style.color = titleColor;
+            }
 
-    // 防呆檢查：如果真的沒抓到題目，跳出警示
-    if (currentQuestions.length === 0) {
-        alert("錯誤：無法載入題目，請確認題庫變數是否正確！");
-        return;
-    }
+            // 防呆檢查：如果真的沒抓到題目，跳出警示
+            if (currentActiveBank.length === 0) {
+                alert("錯誤：無法載入題目，請確認題庫變數是否正確！");
+                return;
+            }
 
-    // 測驗數據初始化
-    currentQuestionIndex = 0;
-    score = 0;
-    userAnswers = new Array(currentQuestions.length).fill(null);
+            // 測驗數據初始化
+            currentIdx = 0;
+            score = 0;
 
-    // 畫面切換：隱藏所有畫面，並啟動測驗畫面 (使用 classList 切換更符合你原本的 HTML 設計)
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-    document.getElementById('quiz-screen').classList.add('active-screen');
+            // 畫面切換：隱藏所有畫面，顯示測驗畫面
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById('quiz-screen').style.display = 'flex';
 
-    showQuestion(); // 開始顯示第一題
-}
-}
+            renderQuiz(); // 顯示第一題
+        }
+
         function renderQuiz() {
             if (currentIdx >= currentActiveBank.length) {
                 document.getElementById('final-score').innerText = `最終得分：${score} / ${currentActiveBank.length}`;
@@ -5850,11 +5844,11 @@ function startTest(mode) {
             let correctAnswerText = "";
 
             if (Array.isArray(qData.options)) {
-                // 處理陣列格式 (如: 保險實務、保險法規)
+                // 處理陣列格式
                 optionsArray = qData.options;
                 correctAnswerText = typeof qData.answer === 'number' ? qData.options[qData.answer] : qData.answer;
             } else {
-                // 處理物件格式 (如: 職業道德)
+                // 處理物件格式
                 optionsArray = Object.values(qData.options);
                 correctAnswerText = qData.options[qData.answer];
             }
@@ -5884,7 +5878,7 @@ function startTest(mode) {
         }
 
         // ==========================================
-        // 📖 複習區展示控制器 (同步支援相容性修正)
+        // 📖 複習區展示控制器
         // ==========================================
         function showReview(mode) {
             let bank, title, titleColor;
@@ -5902,7 +5896,6 @@ function startTest(mode) {
             container.innerHTML = '';
 
             bank.forEach((item, i) => {
-                // --- 自動適應不同題庫的答案結構 ---
                 let ansText = "";
                 if (Array.isArray(item.options)) {
                     ansText = typeof item.answer === 'number' ? item.options[item.answer] : item.answer;
@@ -5920,6 +5913,7 @@ function startTest(mode) {
             document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
             document.getElementById('review-screen').style.display = 'flex';
         }
+
         // 支援 Enter 快捷鍵自動跳轉下一題
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && document.getElementById('next-btn').style.display === 'block') {
