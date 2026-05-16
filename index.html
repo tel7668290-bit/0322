@@ -5770,51 +5770,74 @@ function getRandom(arr, num) {
     // 截取指定的數量回傳
     return shuffled.slice(0, maxNum);
 }
-        function startTest(mode) {
-    currentQuestions = []; // 清空當前題目
+     // ==========================================
+// 1. 隨機抽題工具函數 (確保放最上面)
+// ==========================================
+function getRandom(arr, num) {
+    if (!arr || arr.length === 0) return []; // 防呆：避免題庫不存在時出錯
+    const maxNum = Math.min(num, arr.length);
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, maxNum);
+}
+
+// ==========================================
+// 2. 開始測驗主要邏輯 (已套用你的真實題庫變數)
+// ==========================================
+function startTest(mode) {
+    currentQuestions = []; // 初始化清空當前題目
     
     if (mode === 'mixed') {
-        // --- 隨機測驗：各科抽 15 題 ---
+        // --- 隨機測驗：5 個科目各抽 15 題，共 75 題 ---
         let q1 = getRandom(insurancePracticeBank, 15);
         let q2 = getRandom(insuranceLawBank, 15);
-        let q3 = getRandom(ethicsBank, 15);      // 假設你的職業道德題庫變數叫 ethicsBank
-        let q4 = getRandom(theoryBank, 15);      // 假設你的保險理論題庫變數叫 theoryBank
-        let q5 = getRandom(financeBank, 15);     // 假設你的金融市場常識變數叫 financeBank
+        let q3 = getRandom(ethicsBank, 15);
+        let q4 = getRandom(theoryBank, 15);
+        let q5 = getRandom(financeBank, 15);
         
-        // 將所有科目合併，並再次打亂順序，讓各科題目完全混合 (共 75 題)
+        // 將所有抽取出來的題目合併
         let combined = [...q1, ...q2, ...q3, ...q4, ...q5];
+        // 再次將 75 題徹底打亂順序，達到完全混合效果
         currentQuestions = getRandom(combined, combined.length);
         
-        document.getElementById('quiz-mode-title').innerText = "🎲 隨機測驗 (共75題)";
+        document.getElementById('quiz-mode-title').innerText = "🎲 隨機測驗 (共 75 題)";
         document.getElementById('quiz-mode-title').style.color = "#38bdf8";
 
     } else {
         // --- 獨立科目測驗：每次抽 50 題 ---
-        let selectedBank;
+        let selectedBank = [];
         let titleText = "";
         let titleColor = "";
         
+        // 精確對應你的科目變數與模式
         if (mode === 'practice') { selectedBank = insurancePracticeBank; titleText = "📄 保險實務"; titleColor = "#818cf8"; }
         else if (mode === 'law') { selectedBank = insuranceLawBank; titleText = "⚖️ 保險法規"; titleColor = "#f472b6"; }
         else if (mode === 'ethics') { selectedBank = ethicsBank; titleText = "🛡️ 職業道德"; titleColor = "#fbbf24"; }
         else if (mode === 'theory') { selectedBank = theoryBank; titleText = "💡 保險理論"; titleColor = "#34d399"; }
         else if (mode === 'finance') { selectedBank = financeBank; titleText = "📈 金融市場常識"; titleColor = "#22d3ee"; }
         
+        // 隨機抽 50 題 (如果該題庫總數不足 50 題，會自動抽該科最大上限)
         currentQuestions = getRandom(selectedBank, 50);
-        document.getElementById('quiz-mode-title').innerText = titleText + " (共50題)";
+        document.getElementById('quiz-mode-title').innerText = titleText + " (共 " + currentQuestions.length + " 題)";
         document.getElementById('quiz-mode-title').style.color = titleColor;
     }
 
-    // 測驗狀態初始化
+    // 防呆檢查：如果真的沒抓到題目，跳出警示
+    if (currentQuestions.length === 0) {
+        alert("錯誤：無法載入題目，請確認題庫變數是否正確！");
+        return;
+    }
+
+    // 測驗數據初始化
     currentQuestionIndex = 0;
     score = 0;
     userAnswers = new Array(currentQuestions.length).fill(null);
 
-    // 切換畫面：隱藏所有畫面，只顯示測驗畫面
-    document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
-    document.getElementById('quiz-screen').style.display = 'flex';
+    // 畫面切換：隱藏所有畫面，並啟動測驗畫面 (使用 classList 切換更符合你原本的 HTML 設計)
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+    document.getElementById('quiz-screen').classList.add('active-screen');
 
-    showQuestion(); // 顯示第一題
+    showQuestion(); // 開始顯示第一題
+}
 }
         function renderQuiz() {
             if (currentIdx >= currentActiveBank.length) {
