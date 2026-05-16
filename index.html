@@ -5760,7 +5760,17 @@ const financeBank = [
         // ==========================================
         // 🚀 啟動測驗控制器 (含各科獨立截取與全科混和邏輯)
         // ==========================================
-       function startTest(mode) {
+        
+       // 隨機抽取指定數量題目的函數
+function getRandom(arr, num) {
+    // 防呆機制：如果要求的題數大於題庫總數，就只抽題庫的最大數量
+    const maxNum = Math.min(num, arr.length); 
+    // 將陣列打亂洗牌
+    const shuffled = [...arr].sort(() => 0.5 - Math.random());
+    // 截取指定的數量回傳
+    return shuffled.slice(0, maxNum);
+}
+        function startTest(mode) {
     currentQuestions = []; // 清空當前題目
     
     if (mode === 'mixed') {
