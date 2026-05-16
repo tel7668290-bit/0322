@@ -2699,8 +2699,8 @@
 
       D: "以上皆是"
 
-    },
-
+    }
+  },
   {
     id: 101,
     answer: "B",
@@ -5396,24 +5396,35 @@
             const optArea = document.getElementById('options');
             optArea.innerHTML = '';
             
-            // 動態處理正確答案：如果是數字索引，則映射到正確選項字串；否則維持字串形式
-            const correctAnswer = typeof qData.answer === 'number' ? qData.options[qData.answer] : qData.answer;
+            // --- 自動適應不同題庫的資料結構 ---
+            let optionsArray = [];
+            let correctAnswerText = "";
+
+            if (Array.isArray(qData.options)) {
+                // 處理陣列格式 (如: 保險實務、保險法規)
+                optionsArray = qData.options;
+                correctAnswerText = typeof qData.answer === 'number' ? qData.options[qData.answer] : qData.answer;
+            } else {
+                // 處理物件格式 (如: 職業道德)
+                optionsArray = Object.values(qData.options);
+                correctAnswerText = qData.options[qData.answer];
+            }
             
-            shuffle(qData.options).forEach(opt => {
+            shuffle(optionsArray).forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = 'opt-btn';
                 btn.innerText = opt;
                 btn.onclick = () => {
                     const btns = document.querySelectorAll('.opt-btn');
                     btns.forEach(b => b.disabled = true);
-                    if (opt === correctAnswer) {
+                    if (opt === correctAnswerText) {
                         btn.classList.add('correct');
                         document.getElementById('feedback').innerHTML = "<span style='color:#4ade80'>✔ 判斷正確！</span>";
                         score++;
                     } else {
                         btn.classList.add('wrong');
-                        document.getElementById('feedback').innerHTML = `<span style='color:#f87171'>✘ 答錯了！正確答案應為：${correctAnswer}</span>`;
-                        btns.forEach(b => { if(b.innerText === correctAnswer) b.classList.add('correct'); });
+                        document.getElementById('feedback').innerHTML = `<span style='color:#f87171'>✘ 答錯了！正確答案應為：${correctAnswerText}</span>`;
+                        btns.forEach(b => { if(b.innerText === correctAnswerText) b.classList.add('correct'); });
                     }
                     document.getElementById('next-btn').style.display = 'block';
                 };
@@ -5423,10 +5434,8 @@
             document.getElementById('next-btn').style.display = 'none';
         }
 
-        function nextQuestion() { currentIdx++; renderQuiz(); }
-
         // ==========================================
-        // 📖 複習區展示控制器
+        // 📖 複習區展示控制器 (同步支援相容性修正)
         // ==========================================
         function showReview(mode) {
             let bank, title, titleColor;
@@ -5444,7 +5453,14 @@
             container.innerHTML = '';
 
             bank.forEach((item, i) => {
-                const ansText = typeof item.answer === 'number' ? item.options[item.answer] : item.answer;
+                // --- 自動適應不同題庫的答案結構 ---
+                let ansText = "";
+                if (Array.isArray(item.options)) {
+                    ansText = typeof item.answer === 'number' ? item.options[item.answer] : item.answer;
+                } else {
+                    ansText = item.options[item.answer];
+                }
+
                 const card = document.createElement('div');
                 card.className = "review-card";
                 card.style.borderLeftColor = titleColor;
@@ -5455,7 +5471,6 @@
             document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
             document.getElementById('review-screen').style.display = 'flex';
         }
-
         // 支援 Enter 快捷鍵自動跳轉下一題
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && document.getElementById('next-btn').style.display === 'block') {
